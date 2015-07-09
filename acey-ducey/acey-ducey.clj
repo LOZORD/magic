@@ -28,25 +28,27 @@
         "between the first two.\nif you do not want to bet, input a '0'\n"))
 
 (defn get-card-pair []
-  (let [fst (get-ind)
-        snd (get-ind)]
-    (if (= fst snd)
+  (let [a   (get-ind)
+        b   (get-ind)
+        fst (min a b)
+        snd (max a b)]
+    (if (or (= fst snd) (= (- snd fst) 1))
       (get-card-pair)
-      ([(min fst snd) (max fst snd)]))))
+      [fst snd])))
 
 (defn start-game []
   (game-loop init-cash))
 
 (defn game-loop [curr-cash]
   (if (< 0 curr-cash)
-    (apply continue-round (flatten [curr-cash get-card-pair]))
+    (apply continue-round (flatten [curr-cash (get-card-pair)]))
     (lose-state)))
 
 (defn lose-state []
   (do
     (pcaps "sorry friend, but you blew your wad")
     (pcaps "try again? ('yes' or 'no')")
-    (if (= ((comp trim upcase) read-line) "YES")
+    (if (= ((comp trim upcase) (read-line)) "YES")
       (start-game)
       (do
         (pcaps "ok, hope you had fun")
@@ -65,7 +67,7 @@
     (flush)
     (let
       [
-       user-bet (min (read-string read-line) curr-cash),
+       user-bet (min (read-string (read-line)) curr-cash),
        thd-ind  (rand-int suit-size),
        thd (card-map thd-ind)
        ]
