@@ -1,3 +1,4 @@
+(ns acey-ducey)
 (def init-cash 100)
 (def card-map [
   :2
@@ -14,8 +15,11 @@
   :Ace
 ])
 (def suit-size (count card-map))
-
-(def pcaps (partial println (clojure.string/upper-case)))
+(def trim (partial clojure.string/trim))
+(def upcase (partial clojure.string/upper-case))
+(def pcaps (comp println upcase))
+(def get-ind #(rand-int suit-size))
+(declare run-game start-game game-loop continue-round lose-state)
 
 (def help-str
   (str "acey-ducey is played in the following manner\nthe dealer (computer) "
@@ -24,29 +28,64 @@
         "between the first two.\nif you do not want to bet, input a '0'\n"))
 
 (defn get-card-pair []
-  (let [fst (rand-int suit-size)
-        snd (rand-int suit-size)]
-        [fst snd])) ;; this is broken, need (min, max)
+  (let [fst (get-ind)
+        snd (get-ind)]
+    (if (= fst snd)
+      (get-card-pair)
+      ([(min fst snd) (max fst snd)]))))
 
-(defn game-loop [curr-cash fst-ind snd-ind]
+(defn start-game []
+  (game-loop init-cash))
+
+(defn game-loop [curr-cash]
+  (if (< 0 curr-cash)
+    (apply continue-round (flatten [curr-cash get-card-pair]))
+    (lose-state)))
+
+(defn lose-state []
+  (do
+    (pcaps "sorry friend, but you blew your wad")
+    (pcaps "try again? ('yes' or 'no')")
+    (if (= ((comp trim upcase) read-line) "YES")
+      (start-game)
+      (do
+        (pcaps "ok, hope you had fun")
+        (System/exit 0)))))
+
+(defn continue-round [curr-cash fst-ind snd-ind]
   (let
     [
       fst (card-map fst-ind),
       snd (card-map snd-ind)
     ]
-   (do ;;TODO first check for positive curr-cash
+   (do
     (pcaps (str "you now have $" curr-cash "\n"))
     (pcaps (str "here are your next two cards\n\t" (name fst) "\n\t" (name snd)))
     (pcaps "what is your bet?")
     (flush)
     (let
       [
-          user-bet read-line,
-          thd-ind  (rand-int suit-size),
-          thd-card (card-map thd-ind)
-      ]
-    (if (< fst-ind thd-ind snd-ind)
-      (pcaps "win")
-      (pcaps "lose"))))))
+       user-bet (min (read-string read-line) curr-cash),
+       thd-ind  (rand-int suit-size),
+       thd (card-map thd-ind)
+       ]
+      (do
+        (pcaps (str "you bet " user-bet))
+        (if (< 0 user-bet)
+          (do
+            (pcaps (name thd))
+            (if (< fst-ind thd-ind snd-ind)
+              (do
+                (pcaps "you win!")
+                (game-loop (+ curr-cash user-bet)))
+              (do
+                (pcaps "sorry, you lose")
+                (game-loop (- curr-cash user-bet)))))
+          (do
+            (pcaps "chicken!")
+            (game-loop curr-cash))))))))
 
-(defn main (game-loop init-cash))
+(defn run-game []
+  (do
+    (pcaps help-str)
+    (start-game)))
