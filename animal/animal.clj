@@ -5,24 +5,38 @@
 (def pcaps  (comp println upcase))
 (def get-input #((comp upcase trim) (read-line)))
 
+(declare run-game start-game create-new-tree walk-tree)
+
 (def starter-tree
-  ({  :q "are you thinking of an animal?"
+  {  :q "are you thinking of an animal?"
       :n #(do (pcaps "goodbye") (System/exit 0))
       :y  {
             :q "does it swim?"
             :n :bird
             :y :fish
-          }}))
+          }})
 
-(defn run-game
-  ([filename] (throw (Exception "UNIMPLEMENTED TODO")))
-  ([] (start-game starter-tree)))
+(defn run-game [] (start-game starter-tree))
+  ;;([filename] (throw (Exception "UNIMPLEMENTED TODO")))
+  ;;([] (start-game starter-tree)))
 
 (defn start-game [animal-tree]
   (do
       (pcaps (str "play `guess the animal`\n"
              "think of an animal and the computer will try to guess it!\n"))
       (walk-tree animal-tree animal-tree)))
+
+(defn create-new-tree [
+                       {:keys [q y n] :as old-tree}
+                       old-kw
+                       ;;new-tree
+                       new-node]
+    (if (keyword? old-tree)
+      old-tree
+      (cond
+        (= y old-kw) {:q q, :y new-node, :n n}
+        (= n old-kw) {:q q, :y y, :n new-node}
+        :else {:q q, :y (create-new-tree y), :n (create-new-tree n)})))
 
 
 (defn walk-tree [animal-tree
@@ -49,9 +63,12 @@
                   (do
                     (pcaps (str "what question can i use to distinguish a " new-animal " from a " (name choice) "?"))
                     (let [  new-question (get-input)
-                            new-node {
+                            new-node  {
                                         :q new-question
                                         :y (keyword new-animal)
-
-        (walk-tree animal-tree choice))
+                                        :n choice
+                                      }
+                            new-tree  (create-new-tree animal-tree choice new-node)]
+                      (walk-tree new-tree new-tree))))))))
+        (walk-tree animal-tree choice)))))
 
