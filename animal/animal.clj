@@ -3,13 +3,14 @@
 (def upcase clojure.string/upper-case)
 (def trim   clojure.string/trim)
 (def pcaps  (comp println upcase))
+;; FIXME fix null ptr exception on bad input
 (def get-input #((comp upcase trim) (read-line)))
 
 (declare run-game start-game create-new-tree walk-tree)
 
 (def starter-tree
-  {  :q "are you thinking of an animal?"
-      :n #(do (pcaps "goodbye") (System/exit 0))
+  {   :q  "are you thinking of an animal?"
+      :n  :smartass
       :y  {
             :q "does it swim?"
             :n :bird
@@ -36,26 +37,27 @@
       (cond
         (= y old-kw) {:q q, :y new-node, :n n}
         (= n old-kw) {:q q, :y y, :n new-node}
-        :else {:q q, :y (create-new-tree y), :n (create-new-tree n)})))
+        :else {:q q, :y (create-new-tree y old-kw new-node), :n (create-new-tree n old-kw new-node)})))
 
 
 (defn walk-tree [animal-tree
-                 [{   :q question
-                      :y yes-res
-                      :n no-res} :as curr-node]]
+                 {:keys [q y n] :as curr-node}]
+                 ;;[{   :q question
+                 ;;     :y yes-res
+                 ;;     :n no-res} :as curr-node]]
   (do
-    (pcaps question)
+    (pcaps q)
     (let [  user-in (get-input)
-            choice  (if (.startsWith user-in "Y")   (yes-res) (no-res))
-            other   (if (= choice no-res)           (yes-res) (no-res))]
+            choice  (if (.startsWith user-in "Y") y n)
+            other   (if (= choice n)              y n)]
       ;; have we reached a leaf?
       (if (keyword? choice)
         (do
-          (pcaps (str "is it a " (name choice) "?"))
+          (pcaps (str "let me guess... is it a " (name choice) "?"))
           (let [  guess-resp (get-input) ]
             (if (.startsWith guess-resp "Y")
               (do
-                (pcaps "haha, I got it!")
+                (pcaps "haha, I got it!\n")
                 (walk-tree animal-tree animal-tree))
               (do
                 (pcaps "shoot! what animal is it?")
