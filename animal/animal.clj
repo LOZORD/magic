@@ -6,7 +6,10 @@
 ;; FIXME fix null ptr exception on bad input
 (def get-input #((comp upcase trim) (read-line)))
 
-(declare run-game start-game create-new-tree walk-tree)
+(declare run-game start-game create-new-tree walk-tree gather-animals
+  print-animals gather-animals' print-animals exit-game)
+
+(defn print-animals [] nil) ;; TODO
 
 (def starter-tree
   {   :q  "are you thinking of an animal?"
@@ -19,6 +22,7 @@
 
 (defn run-game [] (start-game starter-tree))
   ;;([filename] (throw (Exception "UNIMPLEMENTED TODO")))
+  ;;TODO be able to read in list of animals and questions
   ;;([] (start-game starter-tree)))
 
 (defn start-game [animal-tree]
@@ -47,9 +51,18 @@
                  ;;     :n no-res} :as curr-node]]
   (do
     (pcaps q)
+    ;; TODO handle 'no' response to root question (should save & exit)
     (let [  user-in (get-input)
-            choice  (if (.startsWith user-in "Y") y n)
-            other   (if (= choice n)              y n)]
+            root?   (= n :smartass)
+            ;;choice  (if (.startsWith user-in "Y") y n)]
+            choice (if root?
+                     (case (partial .startsWith user-in) ;; FIXME
+                       "Y" y
+                       "N" (exit-game animal-tree)
+                       "L" (print-animals animal-tree))
+                     (case (.startsWith user-in) ;; FIXME
+                       "Y" y
+                       "N" n))]
       ;; have we reached a leaf?
       (if (keyword? choice)
         (do
@@ -64,6 +77,7 @@
                 (let [ new-animal (get-input)]
                   (do
                     (pcaps (str "what question can i use to distinguish a " new-animal " from a " (name choice) "?"))
+                    ;; TODO let user distinguish what the Y/N should be for the new animal question
                     (let [  new-question (get-input)
                             new-node  {
                                         :q new-question
@@ -74,3 +88,17 @@
                       (walk-tree new-tree new-tree))))))))
         (walk-tree animal-tree choice)))))
 
+(defn gather-animals' [{:keys [y n] :as animal-tree} animal-vec]
+  (if (keyword? animal-tree)
+    (conj animal-vec animal-tree)
+    (conj animal-vec (gather-animals' y) (gather-animals' n))))
+
+(defn gather-animals [animal-tree]
+  (sort (gather-animals' animal-tree [])))
+
+(defn exit-game [animal-tree]
+  (do
+      (pcaps "writing animals to `animals.json`...")
+      ;; TODO write file
+      (pcaps "goodbye!")
+      (System/exit 0)))
