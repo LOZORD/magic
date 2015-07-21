@@ -1,22 +1,21 @@
-(ns acey-ducey)
+(ns acey-ducey
+    (:require
+      [clojure.string :refer [trim upper-case]]))
 (def init-cash 100)
-(def card-map [
-  :2
-  :3
-  :4
-  :5
-  :6
-  :7
-  :8
-  :9
-  :Jack
-  :Queen
-  :King
-  :Ace
-])
+(def card-map [:2
+               :3
+               :4
+               :5
+               :6
+               :7
+               :8
+               :9
+               :Jack
+               :Queen
+               :King
+               :Ace])
 (def suit-size (count card-map))
-(def trim (partial clojure.string/trim))
-(def upcase (partial clojure.string/upper-case))
+(def upcase upper-case)
 (def pcaps (comp println upcase))
 (def get-ind #(rand-int suit-size))
 (declare run-game start-game game-loop continue-round lose-state)
@@ -56,21 +55,17 @@
 
 (defn continue-round [curr-cash fst-ind snd-ind]
   (let
-    [
-      fst (card-map fst-ind),
-      snd (card-map snd-ind)
-    ]
+    [fst (card-map fst-ind)
+     snd (card-map snd-ind)]
    (do
     (pcaps (str "you now have $" curr-cash "\n"))
     (pcaps (str "here are your next two cards\n\t" (name fst) "\n\t" (name snd)))
     (pcaps "what is your bet?")
     (flush)
     (let
-      [
-       user-bet (min (read-string (read-line)) curr-cash),
-       thd-ind  (rand-int suit-size),
-       thd (card-map thd-ind)
-       ]
+      [user-bet (min (read-string (read-line)) curr-cash)
+       thd-ind  (rand-int suit-size)
+       thd (card-map thd-ind)]
       (do
         (pcaps (str "you bet " user-bet))
         (if (< 0 user-bet)
