@@ -24,10 +24,19 @@
                    (concat (take (- secret-length c) ["0" "0"]) pre))]
       (play-round secret num-guesses))))
 
+(defn lose-state [] (pcaps "TODO"))
+
 (defn play-round [secret guesses]
-  ;; TODO: check that guesses > 0
-  (do
-    (pcaps (str "guess #" (+ (- num-guesses secret) 1) "?"))
-    (flush)
-    (let [user-guess (take secret-length (trim (read-line)))]
-      (pcaps "TODO"))))
+  (if (> guesses 0)
+    (do
+      (pcaps (str "guess #" (+ (- num-guesses secret) 1) "?"))
+      (flush)
+      (let [user-guess (take secret-length (trim (read-line)))]
+        (pcaps "TODO")))
+    (lose-state)))
+
+(defn bagel-comp [secret user]
+  (let [zipped (map vector secret user)
+        fermi-scan (filter true? (map (fn [[a b]] (= a b)) zipped))
+        pico-scan (pcaps "TODO")
+        bagels (= 0 (+ (count fermi-scan) (count pico-scan)))]))
