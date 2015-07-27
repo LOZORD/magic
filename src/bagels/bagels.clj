@@ -11,13 +11,16 @@
 (def pcaps (comp println upcase))
 (def num-chars [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9])
 
-(defn print-help []
-  (pcaps "TODO: help"))
+(declare print-help run-game lose-state play-round win-state get-result
+         build-fermi build-pico build-final)
 
-(defn run-game [seed] ;; TODO: something with `seed`
+(defn print-help []
+  (pcaps "TODO: help text"))
+
+(defn run-game [& seed] ;; TODO: something with `seed`
   (do
     (print-help)
-    (let [pre (str (rand-int (+ MAX 1)))
+    (let [pre (str (rand-int (+ MAX 1))) ;; TODO refactor into separate function
           c (count pre)
           secret (if (= c secret-length)
                    pre
@@ -55,24 +58,20 @@
         fermi-scan (map build-fermi zipped)
         ;; pico-scan (map build-pico fermi-scan)
         non-fermis (filter (comp not :fermi?) fermi-scan)
-        picos (map (fn [{ :secret s ;; TODO: refactor into separate function
-                          :user   u
-                          :index  n
-                          :fermi? _ }]
+        picos (map (fn [{ s :secret ;; TODO: refactor into separate function
+                          u :user
+                          n :index
+                          _ :fermi? }]
                      (some #{u} non-fermis)))
         ;; final (pcaps "TODO zip picos and fermi-scan")
         final (map build-final fermi-scan)]
     (final)))
 
-;;(defn bagels? [result]
-;;  (not (some (fn [h]
-;;               (or (:fermi? h) (:pico? h))) result))
-
 ;; more elegant way to do this? assoc?
-(defn build-final [{  :secret s
-                      :user   u
-                      :index  n
-                      :fermi? fermi? }
+(defn build-final [{ s  :secret
+                     u :user
+                     n :index
+                     fermi? :fermi? }
                    pico?]
   { :secret s
     :user   u
@@ -86,18 +85,9 @@
     :index  n
     :fermi?  (= a b)})
 
-(defn build-pico [{ :secret a, :user b, :index n, :fermi? fermi?}]
+(defn build-pico [{ a :secret, b :user, n  :index, fermi? :fermi? }]
   { :secret a
     :user   b
     :index  n
     :fermi?  fermi?
     :pico (and false false)}) ;; TODO
-
-(comment
-(defn no-dups [] (pcaps "TODO"))
-
-(defn pico-f [zipped]
-  (map (fn [[_ u n1]]
-         (some (fn [[ s _ n2]]
-                  (and (= s n) (not (= n1 n2)))) zipped)) zipped))
-)
