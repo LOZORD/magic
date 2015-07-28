@@ -4,6 +4,6 @@
   :license {:name "GPL"
             :url "https://github.com/LOZORD/magic/blob/master/LICENSE"}
   :dependencies [[org.clojure/clojure "1.5.1"]]
-  :source-paths ["src"]
-  :main src/main.clj
+  ;;:source-paths ["src" "src/animal" "src/acey-ducey" "src/bagels"]
+  ;;:main launcher
   :plugins [[lein-checkall "0.1.1"]])

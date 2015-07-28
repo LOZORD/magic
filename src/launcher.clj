@@ -2,6 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.string :refer [trim upper-case]]))
 
+(declare run-game)
+
 (def src-dir
   (io/file "./src/"))
 
