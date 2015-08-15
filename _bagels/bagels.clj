@@ -12,7 +12,7 @@
 (def num-chars [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9])
 
 (defn print-help []
-  (pcaps "TODO: help"))
+  (pcaps "TODOxxx: help"))
 
 (defn run-game [seed] ;; TODO: something with `seed`
   (do

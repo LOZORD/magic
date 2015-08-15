@@ -32,7 +32,7 @@
 (defn play-round [secret guesses]
   (if (> guesses 0)
     (do
-      (pcaps (str "guess #" (+ (- num-guesses secret) 1) "?"))
+      (pcaps (str "guess #" (+ (- num-guesses guesses) 1) "?"))
       (flush)
       (let [user-guess (take secret-length (trim (read-line)))
             correct? (= user-guess secret)
