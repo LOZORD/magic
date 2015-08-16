@@ -54,7 +54,7 @@
       (lose-state)))
 
 (defn get-result [secret user]
-  (let [zipped (map vector secret user (range secret-length))
+  (let [zipped (map vector (list secret) (list user) (list (range secret-length)))
         fermi-scan (map build-fermi zipped)
         ;; pico-scan (map build-pico fermi-scan)
         non-fermis (filter (comp not :fermi?) fermi-scan)
@@ -62,10 +62,10 @@
                           u :user
                           n :index
                           _ :fermi? }]
-                     (some #{u} non-fermis)))
+                     (some #{u} non-fermis)) fermi-scan) ;; TODO is this the correct collection?
         ;; final (pcaps "TODO zip picos and fermi-scan")
-        final (map build-final fermi-scan)]
-    (final)))
+        final (map (partial apply build-final) (map vector fermi-scan picos))]
+    final))
 
 ;; more elegant way to do this? assoc?
 (defn build-final [{ s  :secret
