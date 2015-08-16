@@ -12,7 +12,7 @@
 (def num-chars [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9])
 
 (declare print-help run-game lose-state play-round win-state get-result
-         build-fermi build-pico build-final)
+         build-fermi build-pico build-final zero-pad)
 
 (defn print-help []
   (pcaps "TODO: help text"))
@@ -21,20 +21,22 @@
   (do
     (print-help)
     (let [pre (str (rand-int (+ MAX 1))) ;; TODO refactor into separate function
-          c (count pre)
-          secret (if (= c secret-length)
-                   pre
-                   (concat (take (- secret-length c) ["0" "0"]) pre))]
+          secret (zero-pad pre)]
+          ;;c (count pre)
+          ;;secret (if (= c secret-length)
+          ;;         pre
+          ;;         (concat (take (- secret-length c) ["0" "0"]) pre))]
       (play-round secret num-guesses))))
 
-(defn lose-state [] (pcaps "TODO"))
+(defn lose-state [] (pcaps "YOU LOSE!"))
 
 (defn play-round [secret guesses]
   (if (> guesses 0)
     (do
       (pcaps (str "guess #" (+ (- num-guesses guesses) 1) "?"))
       (flush)
-      (let [user-guess (take secret-length (trim (read-line)))
+      (let [user-guess (zero-pad (trim (read-line))) ;;(zero-pad (take secret-length (trim (read-line)))) TODO only take a certain amount
+            foo (pcaps (str "received: " user-guess "\tsecret " secret))
             correct? (= user-guess secret)
             result (get-result secret user-guess)
             count-pico (count (filter #(:pico? %) result))
@@ -91,3 +93,13 @@
     :index  n
     :fermi?  fermi?
     :pico (and false false)}) ;; TODO
+
+(defn zero-pad [s]
+  (if (< (count s) secret-length)
+    (case (count s)
+      1 (str "00" s)
+      2 (str "0" s))
+    s))
+
+(defn win-state []
+  (pcaps "you won...")) ;; TODO
