@@ -39,8 +39,11 @@
 
 (defn win-state []
   (do (pcaps "you win!") (new-game)))
-(defn lose-state []
-  (do (pcaps "you lose!") (new-game)))
+(defn lose-state [secret]
+  (do
+    (pcaps "you lose!")
+    (pcaps "my number was: " secret)
+    (new-game)))
 
 (defn get-user-guess []
   (zero-pad (take secret-length (trim (read-line)))))
@@ -63,7 +66,7 @@
               (pcaps "bagels")
               (pico-fermi-print result))
             (play-round secret (dec guesses))))))
-      (lose-state)))
+      (lose-state secret)))
 
 (defn bagels? [result]
   (none #(or (:pico? %) (:fermi? %)) result))
@@ -74,7 +77,8 @@
                         (:fermi? %) "fermi"
                         :else nil) result)
         sans-nil (remove nil? strings)
-        single-string (join " " sans-nil)]
+        sorted (sort-by count sans-nil) ;; a hack so that `pico` is printed before `fermi`
+        single-string (join " " sorted)]
     ((comp pcaps trim) single-string)))
 
 (defn get-result [secret user]
